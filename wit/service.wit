@@ -1,0 +1,11 @@
+// Rust implemented module.
+
+use {delegate} from delegate
+ 
+resource manager {
+    static create: func() -> manager
+
+    add-delegate: func(obj: delegate)
+
+    delegate-names: func() -> list<string>
+}

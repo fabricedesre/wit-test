@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>wit-test</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <script type="module">
+      import { Service, Manager } from "../static/service.js";
+      import { addDelegateToImports } from "../static/delegate.js";
+
+      var module;
+
+      class JsDelegate {
+        constructor() {
+          this.log(`constructor`);
+          this._name = `Some JS Object, ${Math.random()}`;
+        }
+
+        log(msg) {
+          console.log(`JsDelegate: ${msg}`);
+        }
+
+        name() {
+          this.log(`name()`);
+          return this._name;
+        }
+      }
+
+      async function initWasmIfNeeded() {
+        log(`initWasmIfNeeded start module=${module}`);
+        if (module) {
+          return;
+        }
+
+        module = new Service();
+        let imports = {
+        };
+
+        addDelegateToImports(imports, new JsDelegate(), (what) => {
+          if (what == "memory") {
+            return module._exports.memory;
+          } else {
+            console.error("Unsupport get_export() parameter: ", what);
+          }
+        });
+
+        await module.instantiate(fetch(`../static/wit_test.wasm`), imports);
+        log(`initWasmIfNeeded done`);
+      }
+
+      function log_(msg, kind) {
+        let container = document.getElementById("log");
+        let node = document.createElement("div");
+        node.classList.add(kind);
+        node.textContent = msg;
+        container.append(node);
+      }
+
+      function log(msg) {
+        log_(msg, "log");
+      }
+
+      function error(msg) {
+        log_(msg, "error");
+      }
+
+      async function runTest() {
+        document.getElementById("log").innerHTML = "";
+        try {
+          let manager = Manager.create(module);
+          
+          let delegate = new JsDelegate();
+          log(`Delegate name: ${delegate.name()}`);
+
+          manager.addDelegate(delegate);
+          
+        } catch(e) {
+          error(e);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        document.getElementById("run-test").addEventListener("click", runTest);
+
+        await initWasmIfNeeded();
+      });
+    </script>
+    <style>
+      div.error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="run-test">Run Test</button>
+    <pre id="log"></pre>
+  </body>
+</html>

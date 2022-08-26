@@ -1,0 +1,11 @@
+[package]
+edition = "2021"
+name = "wit-test"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wee_alloc = {version = "0.4.5"}
+wit-bindgen-guest-rust = {git = "https://github.com/bytecodealliance/wit-bindgen.git"}

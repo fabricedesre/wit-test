@@ -1,0 +1,5 @@
+// JS implemented delegate.
+
+resource delegate {
+    name: func() -> string
+}
